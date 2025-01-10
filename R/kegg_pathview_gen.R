@@ -332,50 +332,60 @@ save_kegg_pathviews <- function( target_cell, lst.gsa.all, lst.fcs.all, df_pathw
             df_pw_sel <- select_valid_pathways_from_gsa_result( df.gsa, pathways_map, df_kegg_pw_map,
                                                                 p.val.cutoff = gsa.p.val.cutoff )
 
-            pw_id_sel <- df_pw_sel$pw_id
-            pw_name_sel <- df_pw_sel$pw_name
-
-            s_max = 0
-            for( i in 1:length(pw_name_sel)){ s_max <- max( s_max, str_length(pw_name_sel[i]) ) }
-
-            for( i in 1:length(pw_name_sel))
+            if( dim(df_pw_sel)[1] > 0)
             {
-                pid <- pw_id_sel[i]
-                pname <- pw_name_sel[i]
-                pname <- str_replace( pname, '/', '_' )
+                pw_id_sel <- df_pw_sel$pw_id
+                pw_name_sel <- df_pw_sel$pw_name
 
-                s_suffix = ''
-                if( str_length(pname) < s_max )
+                if( length(pw_name_sel) == 1 )
                 {
-                    for( k in 1:(s_max - str_length(pname)) )
-                    {
-                        s_suffix <- paste0(s_suffix, ' ')
-                    }
-                }
-
-                cat(sprintf('%30s: %d/%d - %d/%d - %s%s \r', target_cell, j, length(items),
-                              i, length(pw_name_sel), pname, s_suffix ))
-                flush.console()
-
-                suppressMessages( pv.out <- pathview(gene.data = foldchanges, pathway.id=pid,
-                          species=species, kegg.dir = dir_to_save, # out.suffix = 'pos',
-                          low = list(gene = "turquoise", cpd = "blue"),
-                          mid = list(gene = "gray", cpd = "gray"),
-                          high = list(gene = "gold", cpd = "yellow"),
-                          kegg.native = TRUE, same.layer = FALSE, min.nnodes = 5))
-
-                if( is.list(pv.out) )
+                    s_max = str_length(pw_name_sel)
+                } else
                 {
-                    file_out <- paste0(pname, '_', item, '.png')
-                    file.rename(paste0(pid,'.pathview.png'), file_out)
-                    suppressMessages( file.move(file_out, dir_to_save) )
-                    if( file.exists(paste0(dir_to_save, '/', pid,'.png')) )
-                    {
-                        file.remove(paste0(dir_to_save, '/', pid,'.png'))
+                    s_max = 0
+                    for( i in 1:length(pw_name_sel)){ 
+                        s_max <- max( s_max, str_length(pw_name_sel[i]) ) 
                     }
-                    if( file.exists(paste0(dir_to_save, '/', pid,'.xml')) )
+                }    
+                for( i in 1:length(pw_name_sel))
+                {
+                    pid <- pw_id_sel[i]
+                    pname <- pw_name_sel[i]
+                    pname <- str_replace( pname, '/', '_' )
+    
+                    s_suffix = ''
+                    if( str_length(pname) < s_max )
                     {
-                        file.remove(paste0(dir_to_save, '/', pid,'.xml'))
+                        for( k in 1:(s_max - str_length(pname)) )
+                        {
+                            s_suffix <- paste0(s_suffix, ' ')
+                        }
+                    }
+    
+                    cat(sprintf('%30s: %d/%d - %d/%d - %s%s \r', target_cell, j, length(items),
+                                  i, length(pw_name_sel), pname, s_suffix ))
+                    flush.console()
+    
+                    suppressMessages( pv.out <- pathview(gene.data = foldchanges, pathway.id=pid,
+                              species=species, kegg.dir = dir_to_save, # out.suffix = 'pos',
+                              low = list(gene = "turquoise", cpd = "blue"),
+                              mid = list(gene = "gray", cpd = "gray"),
+                              high = list(gene = "gold", cpd = "yellow"),
+                              kegg.native = TRUE, same.layer = FALSE, min.nnodes = 5))
+    
+                    if( is.list(pv.out) )
+                    {
+                        file_out <- paste0(pname, '_', item, '.png')
+                        file.rename(paste0(pid,'.pathview.png'), file_out)
+                        suppressMessages( file.move(file_out, dir_to_save) )
+                        if( file.exists(paste0(dir_to_save, '/', pid,'.png')) )
+                        {
+                            file.remove(paste0(dir_to_save, '/', pid,'.png'))
+                        }
+                        if( file.exists(paste0(dir_to_save, '/', pid,'.xml')) )
+                        {
+                            file.remove(paste0(dir_to_save, '/', pid,'.xml'))
+                        }
                     }
                 }
             }
