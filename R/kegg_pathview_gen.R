@@ -213,6 +213,7 @@ select_valid_pathways_from_gsa_result <- function( df.gsa, pathways_map, df_kegg
     if( verbose )
     {
         cat(sprintf('# GSA items: %d -> %d -> %d -> ', n_before, n_after, length(pw_detected_scoda) ))
+        flush.console()
     }
 
     kegg_pw_id_name <- rownames(df_kegg_pw_map)
@@ -230,6 +231,7 @@ select_valid_pathways_from_gsa_result <- function( df.gsa, pathways_map, df_kegg
     if( verbose )
     {
         cat(sprintf('%d intersection %d -> %d \n', n_scoda, n_kegg, n_common ))
+        flush.console()
     }
     df_pw_sel <- df_kegg_pw_map[pw_common, ]
 
