@@ -3,6 +3,3 @@
 export(get_all_fold_changes)
 export(get_mkr_mat_from_hicat_mkr_file)
 export(get_pathways_map)
-export(identify_celltypes_using_marker)
-export(identify_celltypes_using_ref)
-export(save_kegg_pathviews)
