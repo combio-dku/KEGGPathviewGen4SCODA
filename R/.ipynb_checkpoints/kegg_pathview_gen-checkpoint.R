@@ -60,9 +60,9 @@ get_fold_changes <- function( df.deg.res, species, pval.cutoff = 0.01 )
 #' This function retreives fold changes from the SCODA DEG results.
 #'
 #' @param lst.deg.res DEG results from SCODA (a named list of data frames)
-#' @param species 'human' or 'mouse'. 
-#' @param pval.cutoff p-value cutoff to filter DEGs.
-#' @return a named list of named list of fold changes. Names of fold changes are ENTREZ gene code.
+#' @param species Either 'human' or 'mouse'
+#' @param pval.cutoff p-value cutoff to filter DEGs
+#' @return A named list of named list of fold changes. Names of fold changes are ENTREZ gene code
 #' @export
 get_all_fold_changes <- function( lst.deg.res, species, pval.cutoff = 0.01 )
 {
@@ -240,12 +240,12 @@ select_valid_pathways_from_gsa_result <- function( df.gsa, pathways_map, df_kegg
 #' get_pathways_map
 #'
 #' This function retreives mapping between the KEGG pathways and the pathways DB used. 
-#' Using the gene sets defined in the two pathways DBs, it selects, for each pathway in the SCODA Gene Set Analysis result, the KEGG pathway with the best matche. 
+#' Using the gene sets defined in the two pathways DBs, it selects, for each pathway in the SCODA Gene Set Analysis result, the KEGG pathway with the best match. 
 #'
-#' @param pathways_used a named list of gene sets used for the SCODA Gene Set (Enrichment) analysis. It is stored in the SCODA result file.
-#' @param species 'human' or 'mouse'. 
-#' @param min_overlap a number between 0 and 1. Used to filter the matched KEGG pathways. The overlap is defined by the number of genes common in the two pathways divided by the smallest gene set size. 
-#' @return a data frame containing the mapping between the KEGG pathway and the pathway used in the SCODA.
+#' @param pathways_used a named list of gene sets used for the SCODA Gene Set (Enrichment) analysis. It is stored in the SCODA result file
+#' @param species 'human' or 'mouse'
+#' @param min_overlap a number between 0 and 1. Used to filter the matched KEGG pathways. The overlap is defined by the number of genes common in the two pathways divided by the smallest gene set size
+#' @return a data frame containing the mapping between the KEGG pathway and the pathway used in the SCODA
 #' @export
 get_pathways_map <- function(pathways_used, species, min_overlap = 0.85 )
 {

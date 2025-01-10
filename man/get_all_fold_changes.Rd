@@ -9,12 +9,12 @@ get_all_fold_changes(lst.deg.res, species, pval.cutoff = 0.01)
 \arguments{
 \item{lst.deg.res}{DEG results from SCODA (a named list of data frames)}
 
-\item{species}{'human' or 'mouse'.}
+\item{species}{Either 'human' or 'mouse'}
 
-\item{pval.cutoff}{p-value cutoff to filter DEGs.}
+\item{pval.cutoff}{p-value cutoff to filter DEGs}
 }
 \value{
-a named list of named list of fold changes. Names of fold changes are ENTREZ gene code.
+A named list of named list of fold changes. Names of fold changes are ENTREZ gene code
 }
 \description{
 This function retreives fold changes from the SCODA DEG results.

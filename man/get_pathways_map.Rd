@@ -7,16 +7,16 @@
 get_pathways_map(pathways_used, species, min_overlap = 0.85)
 }
 \arguments{
-\item{pathways_used}{a named list of gene sets used for the SCODA Gene Set (Enrichment) analysis. It is stored in the SCODA result file.}
+\item{pathways_used}{a named list of gene sets used for the SCODA Gene Set (Enrichment) analysis. It is stored in the SCODA result file}
 
-\item{species}{'human' or 'mouse'.}
+\item{species}{'human' or 'mouse'}
 
-\item{min_overlap}{a number between 0 and 1. Used to filter the matched KEGG pathways. The overlap is defined by the number of genes common in the two pathways divided by the smallest gene set size.}
+\item{min_overlap}{a number between 0 and 1. Used to filter the matched KEGG pathways. The overlap is defined by the number of genes common in the two pathways divided by the smallest gene set size}
 }
 \value{
-a data frame containing the mapping between the KEGG pathway and the pathway used in the SCODA.
+a data frame containing the mapping between the KEGG pathway and the pathway used in the SCODA
 }
 \description{
 This function retreives mapping between the KEGG pathways and the pathways DB used.
-Using the gene sets defined in the two pathways DBs, it selects, for each pathway in the SCODA Gene Set Analysis result, the KEGG pathway with the best matche.
+Using the gene sets defined in the two pathways DBs, it selects, for each pathway in the SCODA Gene Set Analysis result, the KEGG pathway with the best match.
 }
