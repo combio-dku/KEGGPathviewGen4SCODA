@@ -133,14 +133,28 @@ convert_gene_symbols_in_Pathways_DB_to_entrez <- function(pathways_used, species
     pathways_names_used <- names(pathways_used)
     ## For each pathway, convert hugo symbols into ENTREZ symbol
     pathways_used_entrez <- list()
+    pathways_names_new <- c()
+
     cat(sprintf('Converting Pathways DB .. \r'))
+    cnt <- 0
+    pb <- txtProgressBar(min = 0, max = length(pathways_names_used), style = 3)
     for( i in 1:length(pathways_names_used) )
     {
-        cat(sprintf('Converting Pathways DB .. %3d/%3d   \r', i, length(pathways_names_used)) ) #, pathways_names_used[i]))
-        flush.console()
+        # cat(sprintf('Converting Pathways DB .. %3d/%3d   \r', i, length(pathways_names_used)) ) #, pathways_names_used[i]))
+        # flush.console()
 
-        hugo.symbols <- pathways_used[[pathways_names_used[i]]]
-        if( length(hugo.symbols) == 1 ){ hugo.symbols <- hugo.symbols[[1]] }
+        hugo.symbols <- pathways_used[[pathways_names_used[i]]] 
+        # if( length(hugo.symbols) == 1 ){ hugo.symbols <- hugo.symbols[[1]] }
+        for(j in 1:10)
+        {
+          if( length(hugo.symbols) > 1 )
+          {
+            break
+          } else
+          {
+            hugo.symbols <- hugo.symbols[[1]]
+          }
+        }
 
         {
             s <- hugo.symbols[[1]][length(hugo.symbols[[1]])]
@@ -150,15 +164,22 @@ convert_gene_symbols_in_Pathways_DB_to_entrez <- function(pathways_used, species
             }
         }
 
-        suppressMessages( Convert_result <- biomaRt::select(org.db, keys = hugo.symbols,
-                                 columns = c("ENTREZID", "SYMBOL"),
-                                 keytype = "SYMBOL") )
-        Convert_result <- distinct(Convert_result, SYMBOL, .keep_all= TRUE)
-        pathways_used_entrez[[i]] <- Convert_result[,"ENTREZID"]
-        wh <- which(is.na( pathways_used_entrez[[i]] ))
-        pathways_used_entrez[[i]] <- pathways_used_entrez[[i]][-wh]
+        if( length(hugo.symbols) > 1 )
+        {
+          cnt <- cnt + 1
+          suppressMessages( Convert_result <- biomaRt::select(org.db, keys = hugo.symbols,
+                                  columns = c("ENTREZID", "SYMBOL"),
+                                  keytype = "SYMBOL") )
+          Convert_result <- distinct(Convert_result, SYMBOL, .keep_all= TRUE)
+          pathways_used_entrez[[cnt]] <- Convert_result[,"ENTREZID"]
+          wh <- which(is.na( pathways_used_entrez[[cnt]] ))
+          pathways_used_entrez[[cnt]] <- pathways_used_entrez[[cnt]][-wh]
+          pathways_names_new[cnt] <- pathways_names_used[i]
+        }
+        setTxtProgressBar(pb, i)
     }
-    names(pathways_used_entrez) <- pathways_names_used
+    close(pb)
+    names(pathways_used_entrez) <- pathways_names_new # pathways_names_used
     cat(sprintf('Converting Pathways DB .. done.        \n'))
 
     return(pathways_used_entrez)
@@ -282,7 +303,6 @@ get_pathways_map <- function(pathways_used, species, min_overlap = 0.85 )
     # return( list(kegg_pw_map = df_kegg_pw_map, pathways_map = pathways_map) )
 }
 
-
 #' save_kegg_pathviews
 #'
 #' This function saves Kthe EGG pathview images colored by log-fold-changes of the pathways identified in the SCODA gene set (enrichment) analysis result for a specific cell-type. 
@@ -322,7 +342,7 @@ save_kegg_pathviews <- function( target_cell, lst.gsa.all, lst.fcs.all, df_pathw
         }
     }
     items <- names(lst.df.gsa)
-
+    pb <- txtProgressBar(min = 0, max = length(items), style = 3)
     for( j in 1:length(items) )
     {
         item <- items[j]
@@ -364,9 +384,9 @@ save_kegg_pathviews <- function( target_cell, lst.gsa.all, lst.fcs.all, df_pathw
                         }
                     }
     
-                    cat(sprintf('%30s: %d/%d - %d/%d - %s%s \r', target_cell, j, length(items),
-                                  i, length(pw_name_sel), pname, s_suffix ))
-                    flush.console()
+                    # cat(sprintf('%30s: %d/%d - %d/%d - %s%s \r', target_cell, j, length(items),
+                    #               i, length(pw_name_sel), pname, s_suffix ))
+                    # flush.console()
     
                     suppressMessages( pv.out <- pathview(gene.data = foldchanges, pathway.id=pid,
                               species=species, kegg.dir = dir_to_save, # out.suffix = 'pos',
@@ -392,7 +412,9 @@ save_kegg_pathviews <- function( target_cell, lst.gsa.all, lst.fcs.all, df_pathw
                 }
             }
         }
+        setTxtProgressBar(pb, j)
     }
+    close(pb)
     cat(sprintf('%30s: %d/%d - %d/%d - %s%s \n', target_cell, j, length(items),
                   i, length(pw_name_sel), pname, s_suffix ))
     return(dir_to_save)
