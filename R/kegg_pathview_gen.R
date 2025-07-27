@@ -55,50 +55,6 @@ get_fold_changes <- function( df.deg.res, species, pval.cutoff = 0.01 )
 }
 
 
-#' get_all_fold_changes
-#'
-#' This function retreives fold changes from the SCODA DEG results.
-#'
-#' @param adata SCODA-processed anndata object. 
-#' @param pval.cutoff p-value cutoff to filter DEGs
-#' @return A named list of named list of fold changes. Names of fold changes are ENTREZ gene code
-#' @export
-get_all_fold_changes <- function( adata, pval.cutoff = 0.01 )
-{
-    cat(sprintf('Getting fold changes .. \n'))
-    flush.console()
-
-    lst.deg.res <- adata_t$uns[['DEG_vs_ref']]
-    species <- adata$uns[['usr_param']][['species']]
-
-    lst.fc.res <- c()
-    for( j in 1:length(lst.deg.res) )
-    {
-        cat(sprintf('%30s: ', names(lst.deg.res)[j]))
-        flush.console()
-
-        lst.deg.t <- lst.deg.res[[j]]
-        lst.fc.t <- list()
-        for( i in 1:length(lst.deg.t) )
-        {
-            foldchanges <- get_fold_changes(lst.deg.t[[i]], species, pval.cutoff )
-            lst.fc.t[[i]] <- foldchanges
-            if( i == length(lst.deg.t) )
-            {
-                cat(sprintf('%s(%d)\n', names(lst.deg.t)[i], sum(foldchanges != 0)))
-            } else{
-                cat(sprintf('%s(%d), ', names(lst.deg.t)[i], sum(foldchanges != 0)))
-            }
-        }
-        names(lst.fc.t) <- names(lst.deg.t)
-        lst.fc.res[[j]] <- lst.fc.t 
-    }
-    names(lst.fc.res) <- names(lst.deg.res)
-    cat(sprintf('Getting fold changes .. done. \n'))
-    return( lst.fc.res )
-}
-
-
 get_target_fold_changes <- function( adata, target, pval.cutoff = 0.01 )
 {
     lst.deg.res <- adata_t$uns[['DEG_vs_ref']]
@@ -338,11 +294,10 @@ get_pathways_map <- function(adata, min_overlap = 0.85 )
 #'
 #' This function saves Kthe EGG pathview images colored by log-fold-changes of the pathways identified in the SCODA gene set (enrichment) analysis result for a specific cell-type. 
 #'
+#' @param adata SCODA-processed anndata object. 
 #' @param target_cell target cell-type to retreives its DEGs on the KEGG pathview images. Should be one of the name list of lst.gsa.all.
-#' @param lst.gsa.all Gene Set (Enrichment) Analysis result retreived from the SCODA result file. 
-#' @param lst.fcs.all A named list of log-fold-changes obtained by the function 'get_all_fold_changes'. 
 #' @param df_pathways_map A data frame containing the mapping between the KEGG pathway and the pathway used in the SCODA. Use the output of the function 'get_pathways_map'. 
-#' @param species 'human' or 'mouse'. 
+#' @param deg.p.val.cutoff p-value to filter the DEG analysis results in the SCODA result file. 
 #' @param gsa.p.val.cutoff p-value to filter the Gene Set (Enrichment) analysis results in the SCODA result file. 
 #' @return The name of the folder where KEGG pathview images are stored. It is 'KEGG_pathview_(cell type)', where (cell type) is the 'target_cell'.
 #' @export
