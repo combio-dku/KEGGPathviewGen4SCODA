@@ -8,7 +8,7 @@ save_kegg_pathviews(
   adata,
   target_cell,
   df_pathways_map,
-  pathways = NULL,
+  pathways = NULL,aC8`C8
   deg.p.val.cutoff = 0.01,
   gsa.p.val.cutoff = 0.01,
   deg.key = "DEG_vs_ref",
