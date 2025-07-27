@@ -55,45 +55,30 @@ get_fold_changes <- function( df.deg.res, species, pval.cutoff = 0.01 )
 }
 
 
-#' get_all_fold_changes
-#'
-#' This function retreives fold changes from the SCODA DEG results.
-#'
-#' @param lst.deg.res DEG results from SCODA (a named list of data frames)
-#' @param species Either 'human' or 'mouse'
-#' @param pval.cutoff p-value cutoff to filter DEGs
-#' @return A named list of named list of fold changes. Names of fold changes are ENTREZ gene code
-#' @export
-get_all_fold_changes <- function( lst.deg.res, species, pval.cutoff = 0.01 )
+get_target_fold_changes <- function( adata, target, pval.cutoff = 0.01, deg.key = 'DEG_vs_ref' )
 {
-    cat(sprintf('Getting fold changes .. \n'))
+    lst.deg.res <- adata_t$uns[[deg.key]]
+    species <- adata$uns[['usr_param']][['species']]
+
+    j <- target
+    cat(sprintf('%s: ', target))
     flush.console()
 
-    lst.fc.res <- c()
-    for( j in 1:length(lst.deg.res) )
+    lst.deg.t <- lst.deg.res[[j]]
+    lst.fc.t <- list()
+    for( i in 1:length(lst.deg.t) )
     {
-        cat(sprintf('%30s: ', names(lst.deg.res)[j]))
-        flush.console()
-
-        lst.deg.t <- lst.deg.res[[j]]
-        lst.fc.t <- list()
-        for( i in 1:length(lst.deg.t) )
+        foldchanges <- get_fold_changes(lst.deg.t[[i]], species, pval.cutoff )
+        lst.fc.t[[i]] <- foldchanges
+        if( i == length(lst.deg.t) )
         {
-            foldchanges <- get_fold_changes(lst.deg.t[[i]], species, pval.cutoff )
-            lst.fc.t[[i]] <- foldchanges
-            if( i == length(lst.deg.t) )
-            {
-                cat(sprintf('%s(%d)\n', names(lst.deg.t)[i], sum(foldchanges != 0)))
-            } else{
-                cat(sprintf('%s(%d), ', names(lst.deg.t)[i], sum(foldchanges != 0)))
-            }
+            cat(sprintf('%s(%d)\n', names(lst.deg.t)[i], sum(foldchanges != 0)))
+        } else{
+            cat(sprintf('%s(%d), ', names(lst.deg.t)[i], sum(foldchanges != 0)))
         }
-        names(lst.fc.t) <- names(lst.deg.t)
-        lst.fc.res[[j]] <- lst.fc.t 
     }
-    names(lst.fc.res) <- names(lst.deg.res)
-    cat(sprintf('Getting fold changes .. done. \n'))
-    return( lst.fc.res )
+    names(lst.fc.t) <- names(lst.deg.t)
+    return( lst.fc.t )
 }
 
 
@@ -133,14 +118,28 @@ convert_gene_symbols_in_Pathways_DB_to_entrez <- function(pathways_used, species
     pathways_names_used <- names(pathways_used)
     ## For each pathway, convert hugo symbols into ENTREZ symbol
     pathways_used_entrez <- list()
+    pathways_names_new <- c()
+
     cat(sprintf('Converting Pathways DB .. \r'))
+    cnt <- 0
+    pb <- txtProgressBar(min = 0, max = length(pathways_names_used), style = 3)
     for( i in 1:length(pathways_names_used) )
     {
-        cat(sprintf('Converting Pathways DB .. %3d/%3d   \r', i, length(pathways_names_used)) ) #, pathways_names_used[i]))
-        flush.console()
+        # cat(sprintf('Converting Pathways DB .. %3d/%3d   \r', i, length(pathways_names_used)) ) #, pathways_names_used[i]))
+        # flush.console()
 
-        hugo.symbols <- pathways_used[[pathways_names_used[i]]]
-        if( length(hugo.symbols) == 1 ){ hugo.symbols <- hugo.symbols[[1]] }
+        hugo.symbols <- pathways_used[[pathways_names_used[i]]] 
+        # if( length(hugo.symbols) == 1 ){ hugo.symbols <- hugo.symbols[[1]] }
+        for(j in 1:10)
+        {
+          if( length(hugo.symbols) > 1 )
+          {
+            break
+          } else
+          {
+            hugo.symbols <- hugo.symbols[[1]]
+          }
+        }
 
         {
             s <- hugo.symbols[[1]][length(hugo.symbols[[1]])]
@@ -150,15 +149,22 @@ convert_gene_symbols_in_Pathways_DB_to_entrez <- function(pathways_used, species
             }
         }
 
-        suppressMessages( Convert_result <- biomaRt::select(org.db, keys = hugo.symbols,
-                                 columns = c("ENTREZID", "SYMBOL"),
-                                 keytype = "SYMBOL") )
-        Convert_result <- distinct(Convert_result, SYMBOL, .keep_all= TRUE)
-        pathways_used_entrez[[i]] <- Convert_result[,"ENTREZID"]
-        wh <- which(is.na( pathways_used_entrez[[i]] ))
-        pathways_used_entrez[[i]] <- pathways_used_entrez[[i]][-wh]
+        if( length(hugo.symbols) > 1 )
+        {
+          cnt <- cnt + 1
+          suppressMessages( Convert_result <- biomaRt::select(org.db, keys = hugo.symbols,
+                                  columns = c("ENTREZID", "SYMBOL"),
+                                  keytype = "SYMBOL") )
+          Convert_result <- distinct(Convert_result, SYMBOL, .keep_all= TRUE)
+          pathways_used_entrez[[cnt]] <- Convert_result[,"ENTREZID"]
+          wh <- which(is.na( pathways_used_entrez[[cnt]] ))
+          pathways_used_entrez[[cnt]] <- pathways_used_entrez[[cnt]][-wh]
+          pathways_names_new[cnt] <- pathways_names_used[i]
+        }
+        setTxtProgressBar(pb, i)
     }
-    names(pathways_used_entrez) <- pathways_names_used
+    close(pb)
+    names(pathways_used_entrez) <- pathways_names_new # pathways_names_used
     cat(sprintf('Converting Pathways DB .. done.        \n'))
 
     return(pathways_used_entrez)
@@ -213,6 +219,7 @@ select_valid_pathways_from_gsa_result <- function( df.gsa, pathways_map, df_kegg
     if( verbose )
     {
         cat(sprintf('# GSA items: %d -> %d -> %d -> ', n_before, n_after, length(pw_detected_scoda) ))
+        flush.console()
     }
 
     kegg_pw_id_name <- rownames(df_kegg_pw_map)
@@ -230,6 +237,7 @@ select_valid_pathways_from_gsa_result <- function( df.gsa, pathways_map, df_kegg
     if( verbose )
     {
         cat(sprintf('%d intersection %d -> %d \n', n_scoda, n_kegg, n_common ))
+        flush.console()
     }
     df_pw_sel <- df_kegg_pw_map[pw_common, ]
 
@@ -242,13 +250,15 @@ select_valid_pathways_from_gsa_result <- function( df.gsa, pathways_map, df_kegg
 #' This function retreives mapping between the KEGG pathways and the pathways DB used. 
 #' Using the gene sets defined in the two pathways DBs, it selects, for each pathway in the SCODA Gene Set Analysis result, the KEGG pathway with the best match. 
 #'
-#' @param pathways_used a named list of gene sets used for the SCODA Gene Set (Enrichment) analysis. It is stored in the SCODA result file
-#' @param species 'human' or 'mouse'
+#' @param adata SCODA-processed anndata object. 
 #' @param min_overlap a number between 0 and 1. Used to filter the matched KEGG pathways. The overlap is defined by the number of genes common in the two pathways divided by the smallest gene set size
 #' @return a data frame containing the mapping between the KEGG pathway and the pathway used in the SCODA
 #' @export
-get_pathways_map <- function(pathways_used, species, min_overlap = 0.85 )
+get_pathways_map <- function(adata, min_overlap = 0.85 )
 {
+    species <- adata$uns[['usr_param']][['species']]
+    pathways_used <- adata$uns[['Pathways_DB']]
+
     if( tolower(species) %in% c('hs', 'human') ){ species = 'hsa' }
     else if( tolower(species) %in% c('mm', 'mouse')){ species = 'mmu' }
 
@@ -280,27 +290,27 @@ get_pathways_map <- function(pathways_used, species, min_overlap = 0.85 )
     # return( list(kegg_pw_map = df_kegg_pw_map, pathways_map = pathways_map) )
 }
 
-
 #' save_kegg_pathviews
 #'
 #' This function saves Kthe EGG pathview images colored by log-fold-changes of the pathways identified in the SCODA gene set (enrichment) analysis result for a specific cell-type. 
 #'
+#' @param adata SCODA-processed anndata object. 
 #' @param target_cell target cell-type to retreives its DEGs on the KEGG pathview images. Should be one of the name list of lst.gsa.all.
-#' @param lst.gsa.all Gene Set (Enrichment) Analysis result retreived from the SCODA result file. 
-#' @param lst.fcs.all A named list of log-fold-changes obtained by the function 'get_all_fold_changes'. 
 #' @param df_pathways_map A data frame containing the mapping between the KEGG pathway and the pathway used in the SCODA. Use the output of the function 'get_pathways_map'. 
-#' @param species 'human' or 'mouse'. 
+#' @param deg.p.val.cutoff p-value to filter the DEG analysis results in the SCODA result file. 
 #' @param gsa.p.val.cutoff p-value to filter the Gene Set (Enrichment) analysis results in the SCODA result file. 
 #' @return The name of the folder where KEGG pathview images are stored. It is 'KEGG_pathview_(cell type)', where (cell type) is the 'target_cell'.
 #' @export
-save_kegg_pathviews <- function( target_cell, lst.gsa.all, lst.fcs.all, df_pathways_map, 
-                                 species, gsa.p.val.cutoff = 0.01 )
+save_kegg_pathviews <- function( adata, target_cell, df_pathways_map, deg.p.val.cutoff = 0.01, gsa.p.val.cutoff = 0.01, deg.key = 'DEG_vs_ref', gsa.key = 'GSA_vs_ref_up' )
 {
+    species <- adata$uns[['usr_param']][['species']]
+    lst.gsa.all <- adata$uns[[gsa.key]]
+
     if( tolower(species) %in% c('hs', 'human') ){ species = 'hsa' }
     else if( tolower(species) %in% c('mm', 'mouse')){ species = 'mmu' }
 
     lst.df.gsa <- lst.gsa.all[[target_cell]]
-    fcs.entrez <- lst.fcs.all[[target_cell]]
+    fcs.entrez <- get_target_fold_changes( adata, target = target_cell, pval.cutoff = deg.p.val.cutoff, deg.key = deg.key )
 
     pathways_map <- rownames(df_pathways_map)
     names(pathways_map) <- df_pathways_map[,'pw_name_used']
@@ -320,7 +330,6 @@ save_kegg_pathviews <- function( target_cell, lst.gsa.all, lst.fcs.all, df_pathw
         }
     }
     items <- names(lst.df.gsa)
-
     for( j in 1:length(items) )
     {
         item <- items[j]
@@ -347,6 +356,7 @@ save_kegg_pathviews <- function( target_cell, lst.gsa.all, lst.fcs.all, df_pathw
                         s_max <- max( s_max, str_length(pw_name_sel[i]) ) 
                     }
                 }    
+                pb <- txtProgressBar(min = 0, max = length(pw_name_sel), style = 3, title = item )
                 for( i in 1:length(pw_name_sel))
                 {
                     pid <- pw_id_sel[i]
@@ -362,9 +372,9 @@ save_kegg_pathviews <- function( target_cell, lst.gsa.all, lst.fcs.all, df_pathw
                         }
                     }
     
-                    cat(sprintf('%30s: %d/%d - %d/%d - %s%s \r', target_cell, j, length(items),
-                                  i, length(pw_name_sel), pname, s_suffix ))
-                    flush.console()
+                    # cat(sprintf('%30s: %d/%d - %d/%d - %s%s \r', target_cell, j, length(items),
+                    #               i, length(pw_name_sel), pname, s_suffix ))
+                    # flush.console()
     
                     suppressMessages( pv.out <- pathview(gene.data = foldchanges, pathway.id=pid,
                               species=species, kegg.dir = dir_to_save, # out.suffix = 'pos',
@@ -387,11 +397,13 @@ save_kegg_pathviews <- function( target_cell, lst.gsa.all, lst.fcs.all, df_pathw
                             file.remove(paste0(dir_to_save, '/', pid,'.xml'))
                         }
                     }
+                    setTxtProgressBar(pb, i)
                 }
+                close(pb)
             }
         }
     }
-    cat(sprintf('%30s: %d/%d - %d/%d - %s%s \n', target_cell, j, length(items),
+    cat(sprintf('%s: %d/%d - %d/%d - %s%s \n', target_cell, j, length(items),
                   i, length(pw_name_sel), pname, s_suffix ))
     return(dir_to_save)
 }

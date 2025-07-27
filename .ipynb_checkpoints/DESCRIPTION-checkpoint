@@ -1,0 +1,26 @@
+Package: KEGGPathviewGen4SCODA
+Title: MLBI Lab R functions 
+Version: 0.0.2
+Authors@R: 
+    person(given = "Seokhyun",
+           family = "Yoon",
+           role = c("aut", "cre"),
+           email = "syoon@dku.edu",
+           comment = c(ORCID = "0000-0002-0464-2233"))
+Description: The package contains functions to generate KEGG pathview images from SCODA result. 
+License: `use_mit_license()`
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Imports:
+	dplyr,
+	stringr,
+	reticulate,
+    filesstrings,
+    pathview,
+    gage,
+    gageData,
+    org.Hs.eg.db,
+    org.Mm.eg.db,
+    anndata

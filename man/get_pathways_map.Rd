@@ -4,12 +4,10 @@
 \alias{get_pathways_map}
 \title{get_pathways_map}
 \usage{
-get_pathways_map(pathways_used, species, min_overlap = 0.85)
+get_pathways_map(adata, min_overlap = 0.85)
 }
 \arguments{
-\item{pathways_used}{a named list of gene sets used for the SCODA Gene Set (Enrichment) analysis. It is stored in the SCODA result file}
-
-\item{species}{'human' or 'mouse'}
+\item{adata}{SCODA-processed anndata object.}
 
 \item{min_overlap}{a number between 0 and 1. Used to filter the matched KEGG pathways. The overlap is defined by the number of genes common in the two pathways divided by the smallest gene set size}
 }
