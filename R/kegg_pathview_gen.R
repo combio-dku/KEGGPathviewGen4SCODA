@@ -301,7 +301,7 @@ get_pathways_map <- function(adata, min_overlap = 0.85 )
 #' @param gsa.p.val.cutoff p-value to filter the Gene Set (Enrichment) analysis results in the SCODA result file. 
 #' @return The name of the folder where KEGG pathview images are stored. It is 'KEGG_pathview_(cell type)', where (cell type) is the 'target_cell'.
 #' @export
-save_kegg_pathviews <- function( adata, target_cell, df_pathways_map, deg.p.val.cutoff = 0.01, gsa.p.val.cutoff = 0.01, deg.key = 'DEG_vs_ref', gsa.key = 'GSA_vs_ref_up' )
+save_kegg_pathviews <- function( adata, target_cell, df_pathways_map, pathways = NULL, deg.p.val.cutoff = 0.01, gsa.p.val.cutoff = 0.01, deg.key = 'DEG_vs_ref', gsa.key = 'GSA_vs_ref_up' )
 {
     species <- adata$uns[['usr_param']][['species']]
     lst.gsa.all <- adata$uns[[gsa.key]]
@@ -356,50 +356,71 @@ save_kegg_pathviews <- function( adata, target_cell, df_pathways_map, deg.p.val.
                         s_max <- max( s_max, str_length(pw_name_sel[i]) ) 
                     }
                 }    
-                pb <- txtProgressBar(min = 0, max = length(pw_name_sel), style = 3, title = item )
-                for( i in 1:length(pw_name_sel))
+
+                if( !is.null(pathways) )
                 {
-                    pid <- pw_id_sel[i]
-                    pname <- pw_name_sel[i]
-                    pname <- str_replace( pname, '/', '_' )
-    
-                    s_suffix = ''
-                    if( str_length(pname) < s_max )
+                    pathways_new <- intersect(pathways, pw_name_sel )
+                    if( length(pathways_new) > 0 )
                     {
-                        for( k in 1:(s_max - str_length(pname)) )
+                        if( length(pathways) != length(pathways_new) )
                         {
-                            s_suffix <- paste0(s_suffix, ' ')
+                            cat(sprintf('  %s: %d intersection with %d in DB -> %d \n', item, length(pathways), length(pw_name_sel), length(pathways_new) ))
                         }
-                    }
-    
-                    # cat(sprintf('%30s: %d/%d - %d/%d - %s%s \r', target_cell, j, length(items),
-                    #               i, length(pw_name_sel), pname, s_suffix ))
-                    # flush.console()
-    
-                    suppressMessages( pv.out <- pathview(gene.data = foldchanges, pathway.id=pid,
-                              species=species, kegg.dir = dir_to_save, # out.suffix = 'pos',
-                              low = list(gene = "turquoise", cpd = "blue"),
-                              mid = list(gene = "gray", cpd = "gray"),
-                              high = list(gene = "gold", cpd = "yellow"),
-                              kegg.native = TRUE, same.layer = FALSE, min.nnodes = 5))
-    
-                    if( is.list(pv.out) )
+                        pw_name_sel <- pathways_new
+                    } else 
                     {
-                        file_out <- paste0(pname, '_', item, '.png')
-                        file.rename(paste0(pid,'.pathview.png'), file_out)
-                        suppressMessages( file.move(file_out, dir_to_save) )
-                        if( file.exists(paste0(dir_to_save, '/', pid,'.png')) )
-                        {
-                            file.remove(paste0(dir_to_save, '/', pid,'.png'))
-                        }
-                        if( file.exists(paste0(dir_to_save, '/', pid,'.xml')) )
-                        {
-                            file.remove(paste0(dir_to_save, '/', pid,'.xml'))
-                        }
+                        cat(sprintf('  %s: No pathways matches with the pathways in the %s. \n', item, gsa.key))
+                        pw_name_sel <- NULL
                     }
-                    setTxtProgressBar(pb, i)
                 }
-                close(pb)
+
+                if( !is.null(pw_name_sel) )
+                {
+                    pb <- txtProgressBar(min = 0, max = length(pw_name_sel), style = 3, title = item )
+                    for( i in 1:length(pw_name_sel))
+                    {
+                        pid <- pw_id_sel[i]
+                        pname <- pw_name_sel[i]
+                        pname <- str_replace( pname, '/', '_' )
+        
+                        s_suffix = ''
+                        if( str_length(pname) < s_max )
+                        {
+                            for( k in 1:(s_max - str_length(pname)) )
+                            {
+                                s_suffix <- paste0(s_suffix, ' ')
+                            }
+                        }
+        
+                        # cat(sprintf('%30s: %d/%d - %d/%d - %s%s \r', target_cell, j, length(items),
+                        #               i, length(pw_name_sel), pname, s_suffix ))
+                        # flush.console()
+        
+                        suppressMessages( pv.out <- pathview(gene.data = foldchanges, pathway.id=pid,
+                                  species=species, kegg.dir = dir_to_save, # out.suffix = 'pos',
+                                  low = list(gene = "turquoise", cpd = "blue"),
+                                  mid = list(gene = "gray", cpd = "gray"),
+                                  high = list(gene = "gold", cpd = "yellow"),
+                                  kegg.native = TRUE, same.layer = FALSE, min.nnodes = 5))
+        
+                        if( is.list(pv.out) )
+                        {
+                            file_out <- paste0(pname, '_', item, '.png')
+                            file.rename(paste0(pid,'.pathview.png'), file_out)
+                            suppressMessages( file.move(file_out, dir_to_save) )
+                            if( file.exists(paste0(dir_to_save, '/', pid,'.png')) )
+                            {
+                                file.remove(paste0(dir_to_save, '/', pid,'.png'))
+                            }
+                            if( file.exists(paste0(dir_to_save, '/', pid,'.xml')) )
+                            {
+                                file.remove(paste0(dir_to_save, '/', pid,'.xml'))
+                            }
+                        }
+                        setTxtProgressBar(pb, i)
+                    }
+                    close(pb)                  
+                }
             }
         }
     }

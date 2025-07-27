@@ -5,24 +5,24 @@
 \title{save_kegg_pathviews}
 \usage{
 save_kegg_pathviews(
+  adata,
   target_cell,
-  lst.gsa.all,
-  lst.fcs.all,
   df_pathways_map,
-  species,
-  gsa.p.val.cutoff = 0.01
+  pathways = NULL,
+  deg.p.val.cutoff = 0.01,
+  gsa.p.val.cutoff = 0.01,
+  deg.key = "DEG_vs_ref",
+  gsa.key = "GSA_vs_ref_up"
 )
 }
 \arguments{
+\item{adata}{SCODA-processed anndata object.}
+
 \item{target_cell}{target cell-type to retreives its DEGs on the KEGG pathview images. Should be one of the name list of lst.gsa.all.}
-
-\item{lst.gsa.all}{Gene Set (Enrichment) Analysis result retreived from the SCODA result file.}
-
-\item{lst.fcs.all}{A named list of log-fold-changes obtained by the function 'get_all_fold_changes'.}
 
 \item{df_pathways_map}{A data frame containing the mapping between the KEGG pathway and the pathway used in the SCODA. Use the output of the function 'get_pathways_map'.}
 
-\item{species}{'human' or 'mouse'.}
+\item{deg.p.val.cutoff}{p-value to filter the DEG analysis results in the SCODA result file.}
 
 \item{gsa.p.val.cutoff}{p-value to filter the Gene Set (Enrichment) analysis results in the SCODA result file.}
 }
