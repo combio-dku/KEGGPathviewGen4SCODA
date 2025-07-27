@@ -55,9 +55,9 @@ get_fold_changes <- function( df.deg.res, species, pval.cutoff = 0.01 )
 }
 
 
-get_target_fold_changes <- function( adata, target, pval.cutoff = 0.01 )
+get_target_fold_changes <- function( adata, target, pval.cutoff = 0.01, deg.key = 'DEG_vs_ref' )
 {
-    lst.deg.res <- adata_t$uns[['DEG_vs_ref']]
+    lst.deg.res <- adata_t$uns[[deg.key]]
     species <- adata$uns[['usr_param']][['species']]
 
     j <- target
@@ -301,7 +301,7 @@ get_pathways_map <- function(adata, min_overlap = 0.85 )
 #' @param gsa.p.val.cutoff p-value to filter the Gene Set (Enrichment) analysis results in the SCODA result file. 
 #' @return The name of the folder where KEGG pathview images are stored. It is 'KEGG_pathview_(cell type)', where (cell type) is the 'target_cell'.
 #' @export
-save_kegg_pathviews <- function( adata, target_cell, df_pathways_map, deg.p.val.cutoff = 0.01, gsa.p.val.cutoff = 0.01, gsa.key = 'GSA_vs_ref_up' )
+save_kegg_pathviews <- function( adata, target_cell, df_pathways_map, deg.p.val.cutoff = 0.01, gsa.p.val.cutoff = 0.01, deg.key = 'DEG_vs_ref', gsa.key = 'GSA_vs_ref_up' )
 {
     species <- adata$uns[['usr_param']][['species']]
     lst.gsa.all <- adata$uns[[gsa.key]]
@@ -310,7 +310,7 @@ save_kegg_pathviews <- function( adata, target_cell, df_pathways_map, deg.p.val.
     else if( tolower(species) %in% c('mm', 'mouse')){ species = 'mmu' }
 
     lst.df.gsa <- lst.gsa.all[[target_cell]]
-    fcs.entrez <- get_target_fold_changes( adata, target = target_cell, pval.cutoff = deg.p.val.cutoff )
+    fcs.entrez <- get_target_fold_changes( adata, target = target_cell, pval.cutoff = deg.p.val.cutoff, deg.key = deg.key )
 
     pathways_map <- rownames(df_pathways_map)
     names(pathways_map) <- df_pathways_map[,'pw_name_used']
