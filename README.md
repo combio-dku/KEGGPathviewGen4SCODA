@@ -4,6 +4,6 @@ The package contains functions to generate KEGG pathview images from SCODA resul
 
 ### Example
 <div align="center">
-  <img src="https://github.com/combio-dku/KEGGPathviewGen4SCODA/blob/main/images/KEGG_pathview_UC_mac.png" style="width:100%;"/>
+  <img src="https://github.com/combio-dku/KEGGPathviewGen4SCODA/blob/main/images/KEGG_pathview_UC_mac_inflammed.png" style="width:100%;"/>
 </div>
 >>>>>>> 8ea07494482de2bb2dce2a506e868d9185254f31
