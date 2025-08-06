@@ -345,6 +345,7 @@ save_kegg_pathviews <- function( adata, target_cell, df_pathways_map, pathways =
             {
                 pw_id_sel <- df_pw_sel$pw_id
                 pw_name_sel <- df_pw_sel$pw_name
+                names(pw_id_sel) <- pw_name_sel
 
                 if( length(pw_name_sel) == 1 )
                 {
@@ -366,7 +367,10 @@ save_kegg_pathviews <- function( adata, target_cell, df_pathways_map, pathways =
                         {
                             cat(sprintf('  %s: %d intersection with %d in DB -> %d \n', item, length(pathways), length(pw_name_sel), length(pathways_new) ))
                         }
+                        
                         pw_name_sel <- pathways_new
+                        pw_id_sel <- pw_id_sel[pw_name_sel]
+
                     } else 
                     {
                         cat(sprintf('  %s: No pathways matches with the pathways in the %s. \n', item, gsa.key))
