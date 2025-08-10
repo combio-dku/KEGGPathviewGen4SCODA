@@ -399,9 +399,17 @@ save_kegg_pathviews <- function( adata, target_cell, df_pathways_map, pathways =
                         # cat(sprintf('%30s: %d/%d - %d/%d - %s%s \r', target_cell, j, length(items),
                         #               i, length(pw_name_sel), pname, s_suffix ))
                         # flush.console()
+
+                        # fc <- as.numeric(foldchanges)
+                        # fc <- fc[is.finite(fc)]
+                        # q <- quantile(fc, probs = c(0.1, 0.9), na.rm = TRUE)
+                        # M <- max(abs(q))
+                        # limit_gene_sym <- c(-M, M)    
+                        # limit_cpd <- c(-2, 2)  
         
                         suppressMessages( pv.out <- pathview(gene.data = foldchanges, pathway.id=pid,
                                   species=species, kegg.dir = dir_to_save, # out.suffix = 'pos',
+                                  limit = list(gene=4, cpd=4), 
                                   low = list(gene = "turquoise", cpd = "blue"),
                                   mid = list(gene = "gray", cpd = "gray"),
                                   high = list(gene = "gold", cpd = "yellow"),
