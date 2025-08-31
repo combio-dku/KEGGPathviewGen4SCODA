@@ -299,6 +299,7 @@ get_pathways_map <- function(adata, min_overlap = 0.85 )
 #' @param df_pathways_map A data frame containing the mapping between the KEGG pathway and the pathway used in the SCODA. Use the output of the function 'get_pathways_map'. 
 #' @param deg.p.val.cutoff p-value to filter the DEG analysis results in the SCODA result file. 
 #' @param gsa.p.val.cutoff p-value to filter the Gene Set (Enrichment) analysis results in the SCODA result file. 
+#' @param deg_limit Clipping cutoff for log-fold-chage. Default is 4. 
 #' @return The name of the folder where KEGG pathview images are stored. It is 'KEGG_pathview_(cell type)', where (cell type) is the 'target_cell'.
 #' @export
 save_kegg_pathviews <- function( adata, target_cell, df_pathways_map, pathways = NULL, deg.p.val.cutoff = 0.01, gsa.p.val.cutoff = 0.01, deg.key = 'DEG_vs_ref', gsa.key = 'GSA_vs_ref_up', deg_limit = 4 )
@@ -440,4 +441,5 @@ save_kegg_pathviews <- function( adata, target_cell, df_pathways_map, pathways =
                   i, length(pw_name_sel), pname, s_suffix ))
     return(dir_to_save)
 }
+
 
