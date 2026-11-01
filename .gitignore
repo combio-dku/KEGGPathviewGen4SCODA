@@ -1,0 +1,15 @@
+# R session and RStudio local files (at any directory depth)
+.Rhistory
+.RData
+.Rdata
+.Ruserdata
+.Rproj.user/
+
+# Local credentials and generated caches
+.httr-oauth
+.ipynb_checkpoints/
+.quarto/
+
+# OS metadata
+.DS_Store
+Thumbs.db
