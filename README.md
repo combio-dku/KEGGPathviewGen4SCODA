@@ -40,8 +40,8 @@ Provide a **SCODA-processed AnnData object**, typically loaded from a `.h5ad` fi
 | --- | --- |
 | `usr_param` → `species` | Human (`human`, `hs`, `hsa`) or mouse (`mouse`, `mm`, `mmu`). Use lowercase KEGG codes. |
 | `Pathways_DB` | Named pathway gene sets used by SCODA, with gene symbols that can be mapped to Entrez IDs. |
-| `DEG_vs_ref` (default `deg.key`) | Nested results indexed by cell type and comparison; each DEG table contains `pval` and `log2_FC`, with gene symbols as row names or an `ENTREZID` column. |
-| `GSA_vs_ref_up` (default `gsa.key`) | Nested results indexed by cell type and comparison; each GSA table contains `pval`, with pathway names as row names matching `Pathways_DB`. |
+| `DEG_vs_ref` (default `deg.key`) or `DEG` | Nested results indexed by cell type and comparison; each DEG table contains `pval` and `log2_FC`, with gene symbols as row names or an `ENTREZID` column. |
+| `GSA_vs_ref_up` (default `gsa.key`) or `GSA_up` | Nested results indexed by cell type and comparison; each GSA table contains `pval`, with pathway names as row names matching `Pathways_DB`. |
 
 DEG and GSA results must contain the selected cell type and matching comparison names. Other result keys can be supplied through `deg.key` and `gsa.key` when present in your file.
 
